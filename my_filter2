@@ -1,0 +1,51 @@
+unction res_img = my_filter2(varargin)
+img=varargin{1};
+img=double(img);
+SP=[-1 -1; -1 0; -1 1; 0 -1;0 0; 0 1; 1 -1; 1 0; 1 1];
+[ysize xsize] = size(img);
+img=padarray(img,[1,1]);
+% If the input parameters are filter2(img, mask), then do the linear
+if size(varargin{2},1) > 1
+    mask=varargin{2};
+    neighbors=length(SP);
+    
+    
+  
+    
+   % Calculate dx and dy;
+    dx = xsize-1;
+    dy = ysize-1; 
+     
+   % Initialize the result matrix with zeros.
+    %res_img=zeros(dy+1,dx+1); 
+    res_img=zeros(ysize,xsize);
+    
+    % filtering
+    for i=1:neighbors;
+        y=SP(i,1)+2;
+        x=SP(i,2)+2;
+        res_img=res_img+mask(y,x)*img(y:y+dy,x:x+dx);
+    end
+    
+% Elseif the input parameters are filter2(img, 'median'), then do the
+% median filtering
+elseif size(varargin{2},1) == 1
+
+    
+   % Calculate dx and dy;
+    dx = xsize - 1;
+    dy = ysize - 1; 
+     
+  
+    
+    % filtering
+    for i=1:9
+        y=SP(i,1)+2;
+        x=SP(i,2)+2;
+        res_img(:,:,i)=img(y:y+dy,x:x+dx);
+    end
+    res_img=median(res_img,3);
+
+else
+    error('input argument');
+end
