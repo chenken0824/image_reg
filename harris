@@ -1,0 +1,65 @@
+function [Points,V] = harris(Img, threshold)
+img = rgb2gray(Img); 
+img=double(img);
+[m n]=size(img);
+%calculate Ix2,Iy2,Ixy using Sobel operator
+mask=[-1 0 1;-2 0 2;-1 0 1];
+Ix=my_filter2(img,mask);
+mask=mask';
+Iy=my_filter2(img,mask);
+Ix2=Ix.^2;
+Iy2=Iy.^2;
+Ixy=Ix.*Iy;
+
+%generate 3*3  Gaussian mask
+%[x,y]=meshgrid(-1:1,-1:1);
+%Sigma=1;
+%h=exp(-(x.*x+y.*y)./(2*Sigma*Sigma));
+%h=h/sum(sum(h));
+h=[1 1 1;1 1 1;1 1 1];
+
+Ix2=my_filter2(Ix2,h);
+Iy2=my_filter2(Iy2,h);
+Ixy=my_filter2(Ixy,h);
+
+%calculate R
+Rmax=0;
+R=zeros(m,n);
+for i=1:m
+    for j=1:n
+        M=[Ix2(i,j) Ixy(i,j);Ixy(i,j) Iy2(i,j)];
+        R(i,j)=det(M)-0.06*(trace(M)^2);
+        if R(i,j)>Rmax  
+            Rmax=R(i,j);
+        end
+    end
+end
+
+Points=[];
+tmp=padarray(R,[1,1]);
+for i=2:m+1
+    for j=2:n+1
+        if tmp(i,j)>threshold*Rmax&&tmp(i,j)>tmp(i-1,j-1)&&tmp(i,j)>tmp(i-1,j)&&tmp(i,j)>tmp(i-1,j+1)&&...
+                tmp(i,j)>tmp(i,j-1)&&tmp(i,j)>tmp(i,j+1)&&tmp(i,j)>tmp(i+1,j-1)&&tmp(i,j)>tmp(i+1,j)&&tmp(i,j)>tmp(i+1,j+1)
+            Points=[Points;i-1 j-1];
+        end
+    end
+end
+%find the local maximun of 3*3 region in terms of intensity
+%Points=[];
+%tmp=padarray(img,[1,1]);
+
+%for i=1:length(P)
+%    corner_matrix=tmp(P(i,1):P(i,1)+2,P(i,2):P(i,2)+2);
+%    [x y]=find(corner_matrix==max(max(corner_matrix)));
+%    Points=[Points;P(i,1)+x-2,P(i,2)+y-2];
+%end
+
+tmp=padarray(img,[2,2]);
+V=[];
+for i=1:size(Points,1)
+    tmp_V=tmp(Points(i,1):Points(i,1)+4,Points(i,1):Points(i,2)+4);
+    tmp_V=tmp_V(:);
+    V=[V;tmp_V];
+end
+end
