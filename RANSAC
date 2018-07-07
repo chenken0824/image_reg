@@ -1,0 +1,65 @@
+function [H, inliers] = RANSAC(pointsA,pointsB,threshold,iteration)
+
+numPoints = size(pointsA,2);
+numInliers = 0;
+
+for i = 1:iteration
+    index = randi([1 numPoints],1,8);
+    selectPointsA = pointsA(:,index);
+    selectPointsB = pointsB(:,index);
+    
+    %X_A = selectPointsA(1,:)';
+    %Y_A = selectPointsA(2,:)';
+    %X_B = selectPointsB(1,:)';
+    %Y_B = selectPointsB(2,:)';
+    
+    X_A = selectPointsA(1,:)';
+    Y_A = selectPointsA(2,:)';
+    X_B = selectPointsB(1,:)';
+    Y_B = selectPointsB(2,:)';
+
+    A = [X_A(1) Y_A(1) 1 0 0 0 -X_B(1)*X_A(1) -X_B(1)*Y_A(1);
+         0 0 0 X_A(1) Y_A(1) 1 -Y_B(1)*X_A(1) -Y_B(1)*Y_A(1);
+         X_A(2) Y_A(2) 1 0 0 0 -X_B(2)*X_A(2) -X_B(2)*Y_A(2);
+         0 0 0 X_A(2) Y_A(2) 1 -Y_B(2)*X_A(2) -Y_B(2)*Y_A(2);
+         X_A(3) Y_A(3) 1 0 0 0 -X_B(3)*X_A(3) -X_B(3)*Y_A(3);
+         0 0 0 X_A(3) Y_A(3) 1 -Y_B(3)*X_A(3) -Y_B(3)*Y_A(3);
+         X_A(4) Y_A(4) 1 0 0 0 -X_B(4)*X_A(4) -X_B(4)*Y_A(4);
+         0 0 0 X_A(4) Y_A(4) 1 -Y_B(4)*X_A(4) -Y_B(4)*Y_A(4);
+         X_A(5) Y_A(5) 1 0 0 0 -X_B(5)*X_A(5) -X_B(5)*Y_A(5);
+         0 0 0 X_A(5) Y_A(5) 1 -Y_B(5)*X_A(5) -Y_B(5)*Y_A(5);
+         X_A(6) Y_A(6) 1 0 0 0 -X_B(6)*X_A(6) -X_B(6)*Y_A(6);
+         0 0 0 X_A(6) Y_A(6) 1 -Y_B(6)*X_A(6) -Y_B(6)*Y_A(6);
+         X_A(7) Y_A(7) 1 0 0 0 -X_B(7)*X_A(7) -X_B(7)*Y_A(7);
+         0 0 0 X_A(7) Y_A(7) 1 -Y_B(7)*X_A(7) -Y_B(7)*Y_A(7);
+         X_A(8) Y_A(8) 1 0 0 0 -X_B(8)*X_A(8) -X_B(8)*Y_A(8);
+         0 0 0 X_A(8) Y_A(8) 1 -Y_B(8)*X_A(8) -Y_B(8)*Y_A(8)
+        ];
+    B = [X_B, Y_B]'; 
+    B = B(:);
+    % inverse mapping
+    h = A\B;
+    
+    H_tmp = [h(1) h(2) h(3);
+             h(4) h(5) h(6);
+             h(7) h(8) 1
+            ];
+    
+    predictPoinsB = H_tmp*[pointsA;ones(1,numPoints)];
+    predictPoinsB(1,:) = predictPoinsB(1,:) ./ predictPoinsB(3,:);
+    predictPoinsB(2,:) = predictPoinsB(2,:) ./ predictPoinsB(3,:);
+    predictPoinsB(3,:) = predictPoinsB(3,:) ./ predictPoinsB(3,:);
+    
+    error = (predictPoinsB(1,:) - pointsB(1,:)).^2 + (predictPoinsB(2,:) - pointsB(2,:)).^2;
+    n = sum(sum(error<threshold));
+    if n > numPoints*0.95
+        inliers = find(error<threshold);
+        H = H_tmp;
+        break;
+    elseif n > numInliers
+        numInliers = n;
+        inliers = find(error<threshold);
+        H = H_tmp;
+    end
+end
+end
