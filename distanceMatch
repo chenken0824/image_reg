@@ -1,0 +1,123 @@
+function [matchA, matchB] = distanceMatch(describeA,describeB,pointsA,pointsB,threshold)
+matchA=[];
+matchB=[];
+m=length(describeA);
+n=length(describeB);
+distance=[];
+for i=1:m
+    for j=1:n
+        distance(i,j)=sqrt(sum((describeA(:,i)-describeB(:,j)).^2));
+    end
+end
+s=1./(distance+1);
+s(s<threshold)=0;
+while max(max(s))~=0
+    [x,y]= find(s==max(max(s)));
+    matchA=[matchA;pointsA(x,:)];
+    matchB=[matchB;pointsB(y,:)];
+    s(x,:)=0;
+    s(:,y)=0;
+%for i=1:length(min_d)
+    %if 0<=min_d(i)<=threshold
+        %matchA=[matchA;pointsA(i,:)];
+        %matchB=[matchB;pointsB(L(i),:)];
+        %describeA(i,:)=9*[inf];
+        %describeB(j,:)=9*[inf];
+end
+%[c,d] = size(matchA);
+%dy = matchB(:,1)-matchA(:,1);
+%dx = matchB(:,2)+width-matchA(:,2);
+%dk = dy./dx;
+%k=mode(dk)
+%dk=abs(dk);
+%[rank,index]=sort(abs(dk));
+%error=rank-ones(size(rank,1),1)*mode(dk);
+%closed=find(error==min(error));
+%closed=closed(1);
+%A = [];
+%B = [];
+%for i=1:size(matchA,1)
+%    if dk(i)<abs(k)+0.05
+%        A=[A;matchA(i,:)];
+%        B=[B;matchB(i,:)];
+%    end
+%end
+%numPoints = size(A,1);
+%index = randi([1 numPoints],30,1);
+%A=A(index,:);
+%B=B(index,:);
+
+%dk=abs(dk);
+%a=mean(dk);
+%b=std(dk);
+%[r,c,v]=find(dk>(a+3*b)|dk<(a-3*b));
+%matchA(r,:)=[];
+%matchB(r,:)=[];
+%min_dk=min(dk);
+%max_dk=max(dk);
+%dk=(dk-min_dk)/(max_dk-min_dk);
+%count=zeros(10,1);
+%for i=1:size(dk,1)
+%    if dk(i)<=0.01
+%        count(1,1)=count(1,1)+1;
+%    elseif dk(i)<=0.02
+%        count(2,1)=count(2,1)+1;
+%    elseif dk(i)<=0.03
+%        count(3,1)=count(3,1)+1;
+%    elseif dk(i)<=0.04
+%        count(4,1)=count(4,1)+1;
+%    elseif dk(i)<=0.05
+%        count(5,1)=count(5,1)+1;
+%    elseif dk(i)<=0.06
+%        count(6,1)=count(6,1)+1;
+%    elseif dk(i)<=0.07
+%        count(7,1)=count(7,1)+1;
+%    elseif dk(i)<=0.08
+%        count(8,1)=count(8,1)+1;
+%    elseif dk(i)<=0.09
+%        count(9,1)=count(9,1)+1;
+%    else
+ %       count(10,1)=count(10,1)+1;
+ %   end
+%end
+%k=find(max(count))
+%max(count)
+%A=[];
+%B=[];
+%for i=1:size(matchA,1)
+%    if dk(i)<=0.5
+%        A=[A;matchA(i,:)];
+%        B=[B;matchB(i,:)];
+%    end
+%end
+        
+    
+    
+%mode_dk=mode(dk)
+%[rank,index]=sort(abs(dk));
+%error=rank-ones(size(rank,1),1)*mode(dk)
+%closed=find(error==min(error))
+%A = [];
+%B = [];
+%if closed>=20
+%   for i=closed-20:closed+30
+%        A=[A;matchA(index(i),:)];
+%        B=[B;matchB(index(i),:)];
+%    end
+%else
+%   for i=closed:closed+50
+%        A=[A;matchA(index(i),:)];
+%        B=[B;matchB(index(i),:)];
+%   end
+%end
+
+%for i=1:size(rank,1)
+%    if rank_f<rank(i)<rank_c
+%        A=[A;matchA(index(i),:)];
+%        B=[B;matchB(index(i),:)];
+%    end
+matchA=matchA';
+matchB=matchB';
+
+
+end
