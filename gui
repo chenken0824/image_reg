@@ -1,0 +1,224 @@
+unction varargout = assignment3(varargin)
+% ASSIGNMENT3 MATLAB code for assignment3.fig
+%      ASSIGNMENT3, by itself, creates a new ASSIGNMENT3 or raises the existing
+%      singleton*.
+%
+%      H = ASSIGNMENT3 returns the handle to a new ASSIGNMENT3 or the handle to
+%      the existing singleton*.
+%
+%      ASSIGNMENT3('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in ASSIGNMENT3.M with the given input arguments.
+%
+%      ASSIGNMENT3('Property','Value',...) creates a new ASSIGNMENT3 or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before assignment3_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to assignment3_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help assignment3
+
+% Last Modified by GUIDE v2.5 14-May-2018 14:30:04
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+                   'gui_Singleton',  gui_Singleton, ...
+                   'gui_OpeningFcn', @assignment3_OpeningFcn, ...
+                   'gui_OutputFcn',  @assignment3_OutputFcn, ...
+                   'gui_LayoutFcn',  [] , ...
+                   'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before assignment3 is made visible.
+function assignment3_OpeningFcn(hObject, eventdata, handles, varargin)
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to assignment3 (see VARARGIN)
+
+% Choose default command line output for assignment3
+handles.output = hObject;
+
+% Update handles structure
+guidata(hObject, handles);
+
+% UIWAIT makes assignment3 wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+
+% --- Outputs from this function are returned to the command line.
+function varargout = assignment3_OutputFcn(hObject, eventdata, handles) 
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+
+% --- Executes on button press in pushbutton2.
+function parameters=pushbutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+warning off
+global d
+global threshold
+global similarity
+global num
+prompt={'cylinderProjection degree:','harris threshold:','match similarity:','number of neighbors:'};
+dlg_title='parameter set';
+num_lines=1;
+def={'0.9','0.01','0.5','25'};
+options.Resize='on';
+options.WindowStyle='normal';
+options.Interpreter='tex';
+parameters=inputdlg(prompt,dlg_title,num_lines,def,options);
+d=str2num(parameters{1});
+threshold=str2num(parameters{2});
+similarity=str2num(parameters{3});
+num=str2num(parameters{4});
+
+
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global imgA
+global imgB
+global d
+global imgA_cy
+global imgB_cy
+global widthA
+imgA_cy= cylinderProjection(imgA, d);
+imgB_cy = cylinderProjection(imgB, d);
+
+figure,
+subplot(1,2,1), imshow(imgA_cy);
+subplot(1,2,2), imshow(imgB_cy);
+
+[heightA,widthA,~] = size(imgA_cy);
+
+
+% --- Executes on button press in pushbutton4.
+function pushbutton4_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global threshold
+global imgA_cy
+global imgB_cy
+global PointsA
+global PointsB
+[PointsA, V_A] = harris(imgA_cy,threshold);
+[PointsB, V_B] = harris(imgB_cy,threshold);
+x_A = PointsA(:,1);
+y_A = PointsA(:,2);
+figure,
+subplot(1,2,1), imshow(imgA_cy);
+hold on
+plot(y_A,x_A,'r+');
+x_B = PointsB(:,1);
+y_B = PointsB(:,2);
+subplot(1,2,2), imshow(imgB_cy);
+hold on
+plot(y_B,x_B,'r+');
+
+
+% --- Executes on button press in pushbutton5.
+function pushbutton5_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global imgA_cy
+global imgB_cy
+global PointsA
+global PointsB
+global matchA
+global matchB
+global similarity
+global widthA
+global num
+describesA = featureDescribe(imgA_cy, PointsA,num);
+describesB = featureDescribe(imgB_cy, PointsB,num);
+[matchA, matchB] = distanceMatch(describesA, describesB, PointsA, PointsB, similarity);
+newImg = [imgA_cy, imgB_cy];
+figure,
+imshow(newImg);
+hold on
+plot(matchA(2,:),matchA(1,:),'r+');
+plot(matchB(2,:)+widthA,matchB(1,:),'r+');
+for i = 1:size(matchA,2)
+    plot([matchA(2,i) matchB(2,i)+widthA],[matchA(1,i) matchB(1,i)],'g-');
+end
+
+% --- Executes on button press in pushbutton6.
+function pushbutton6_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global matchA
+global matchB
+global imgA_cy
+global imgB_cy
+global H
+[H, inliers] = RANSAC(matchA, matchB, 10, 2000);
+result = merge(imgA_cy, imgB_cy, H);
+result = uint8(result);
+figure,
+imshow(result);
+
+
+% --- Executes on button press in pushbutton7.
+function pushbutton7_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton7 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+warning off
+global imgA
+[filename,pathname]=uigetfile({'*.bmp';'*.jpg';'*.tif'},'choose imageA');
+str=[pathname,filename];
+imgA=imread(str);
+axes(handles.axes1)
+imshow(imgA)
+
+% --- Executes on button press in pushbutton8.
+function pushbutton8_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton8 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+warning off
+global imgB
+[filename,pathname]=uigetfile({'*.bmp';'*.jpg';'*.tif'},'choose imageB');
+str=[pathname,filename];
+imgB=imread(str);
+axes(handles.axes2)
+imshow(imgB)
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over pushbutton2.
+function pushbutton2_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to pushbutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
