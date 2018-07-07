@@ -1,0 +1,60 @@
+function result = merge(imgA,imgB,H)
+[hb,wb,rgb]=size(imgB);
+[ha,wa,rgb]=size(imgA);
+xb=[];
+yb=[];
+inv_H=inv(H);
+for i=1:wb
+    for j=1:hb
+        yb=[yb;(inv_H(1,:)*[j;i;1])];
+        xb=[xb;(inv_H(2,:)*[j;i;1])];
+    end
+end
+b_down=round(max(yb));
+b_up=round(min(yb));
+b_right=round(max(xb));
+b_left=round(min(xb));
+b_down=max(ha,b_down);
+b_tmp=zeros(b_down,b_right,3);
+x=[];
+y=[];
+for i=1:b_right
+    for j=1:b_down
+        y=H(1,:)*[j;i;1];
+        x=H(2,:)*[j;i;1];
+        x_f=floor(x);
+        y_f=floor(y);
+        if x_f>=1&&x_f<=wb-1&&y_f>=1 && y_f<=hb-1
+            u=x-x_f;
+            v=y-y_f;
+            x_c=x_f+1;
+            y_c=y_f+1;
+            b_tmp(j,i,1)=(1-u)*(1-v)*imgB(y_f,x_f,1)+(1-v)*u*imgB(y_f,x_c,1)+v*(1-u)*imgB(y_c,x_f,1)+u*v*imgB(y_c,x_c,1);
+            b_tmp(j,i,2)=(1-u)*(1-v)*imgB(y_f,x_f,2)+(1-v)*u*imgB(y_f,x_c,2)+v*(1-u)*imgB(y_c,x_f,2)+u*v*imgB(y_c,x_c,2);
+            b_tmp(j,i,3)=(1-u)*(1-v)*imgB(y_f,x_f,3)+(1-v)*u*imgB(y_f,x_c,3)+v*(1-u)*imgB(y_c,x_f,3)+u*v*imgB(y_c,x_c,3);
+        end
+    end
+end
+overlap=wa-b_left;
+ramp=[zeros(1,b_left-1),0:1/overlap:1,ones(1,b_right-wa)];
+[r,c,~]=size(b_tmp);
+blend_b=zeros(r,c,3);
+blend_b(:,:,1) = b_tmp(:,:,1).*repmat(ramp,size(b_tmp,1),1);
+blend_b(:,:,2) = b_tmp(:,:,2).*repmat(ramp,size(b_tmp,1),1);
+blend_b(:,:,3) = b_tmp(:,:,3).*repmat(ramp,size(b_tmp,1),1);
+
+ramp=1-ramp;
+padsize = [b_down,b_right]-[ha,wa]
+imgA_tmp = padarray(imgA,padsize,'post');
+[r,c,~]=size(imgA_tmp);
+blend_a(:,:,1) = double(imgA_tmp(:,:,1)).*repmat(ramp,size(b_tmp,1),1);
+blend_a(:,:,2) = double(imgA_tmp(:,:,2)).*repmat(ramp,size(b_tmp,1),1);
+blend_a(:,:,3) = double(imgA_tmp(:,:,3)).*repmat(ramp,size(b_tmp,1),1);
+
+result=zeros(r,c,3);
+result(:,:,1)=blend_a(:,:,1)+blend_b(:,:,1);
+result(:,:,2)=blend_a(:,:,2)+blend_b(:,:,2);
+result(:,:,3)=blend_a(:,:,3)+blend_b(:,:,3);
+
+
+end
