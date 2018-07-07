@@ -1,0 +1,19 @@
+unction descriptors = featureDescribe(img, Points,num)
+descriptors=[];
+num=sqrt(num);
+tmp=padarray(img,[sqrt(num-1),sqrt(num-1)]);
+Points=Points';
+m=length(Points);
+for i=1:m
+    tmp_V=tmp(Points(1,i):Points(1,i)+num-1,Points(2,i):Points(2,i)+num-1);
+    tmp_V=tmp_V(:);
+    descriptors=[descriptors,tmp_V];
+end
+descriptors=double(descriptors);
+n=length(descriptors);
+mean_d=mean(descriptors);
+std_d=std(descriptors);
+for i=1:n
+    descriptors(:,i)=(descriptors(:,i)-mean_d(i))/std_d(i);
+end
+end
